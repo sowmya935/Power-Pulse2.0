@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Edit Reading - Power Pulse</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f4f8;
+            padding: 30px;
+        }
+
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 400px;
+            margin: auto;
+        }
+
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        button {
+            padding: 12px 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 15px;
+        }
+
+    
+        .flash { padding: 10px 14px; border-radius: 6px; margin: 10px 0; font-size: 14px; }
+        .flash.error { background: #fee2e2; color: #991b1b; }
+        .flash.success { background: #dcfce7; color: #166534; }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h2>✏️ Edit Electricity Reading</h2>
+
+        <div class="flash error" th:if="${error}" th:text="${error}"></div>
+        <div class="flash success" th:if="${message}" th:text="${message}"></div>
+
+        <form method="post" th:action="@{/edit-reading/{id}(id=${reading.id})}">
+
+            <label>Date:</label>
+
+            <br>
+
+            <input
+                type="date"
+                name="readingDate"
+                th:value="${reading.readingDate}"
+                required
+            >
+
+            <br>
+
+            <label>Units (kWh):</label>
+
+            <br>
+
+            <input
+                type="number"
+                name="units"
+                step="0.01"
+                min="0"
+                th:value="${reading.units}"
+                required
+            >
+
+            <br>
+
+            <button type="submit">
+                Update Reading
+            </button>
+
+        </form>
+
+        <a th:href="@{/}">⬅️ Back to Dashboard</a>
+
+    </div>
+
+</body>
+
+</html>

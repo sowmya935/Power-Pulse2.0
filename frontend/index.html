@@ -1,0 +1,352 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Power Pulse Dashboard</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #1e3a8a;
+        }
+
+        .welcome {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px #00000012;
+        }
+
+        .welcome h3 {
+            color: #1e3a8a;
+        }
+
+        .logout {
+            background: #dc2626;
+            color: white;
+            padding: 10px 18px;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+
+        .dashboard {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            width: 200px;
+            box-shadow: 0 6px 20px #00000012;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: #2563eb;
+            font-size: 28px;
+        }
+
+        .card h3 {
+            color: #374151;
+        }
+
+        .card p {
+            color: #6b7280;
+        }
+
+        .section {
+            background: white;
+            padding: 20px;
+            margin-top: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px #00000012;
+        }
+
+        input,
+        button {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            background: #2563eb;
+            color: white;
+        }
+
+        td,
+        th {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+
+        tr:nth-child(even) {
+            background: #f3f4f6;
+        }
+
+        .normal {
+            color: green;
+            font-weight: bold;
+        }
+
+        .warning {
+            color: red;
+            font-weight: bold;
+        }
+
+        .chart-box {
+            max-width: 700px;
+            margin: auto;
+        }
+
+        @media (max-width: 600px) {
+            .welcome {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .card {
+                width: 100%;
+            }
+
+            table {
+                font-size: 12px;
+            }
+        }
+    
+        .flash { padding: 10px 14px; border-radius: 6px; margin: 10px 0; font-size: 14px; }
+        .flash.error { background: #fee2e2; color: #991b1b; }
+        .flash.success { background: #dcfce7; color: #166534; }
+
+        .link-btn { background: none; border: none; color: #dc2626; cursor: pointer; padding: 0; margin: 0; font-size: 1em; text-decoration: underline; }
+        .link-btn:hover { background: none; }
+        .empty { color: #6b7280; padding: 15px; }
+
+        .welcome form { margin: 0; }
+        button.logout { margin: 0; font-size: 1em; }
+        button.logout:hover { background: #b91c1c; }
+    </style>
+</head>
+
+<body>
+
+    <div class="welcome">
+        <h3>👋 Welcome, <span th:text="${userName}">User</span>!</h3>
+
+        <form th:action="@{/logout}" method="post" style="margin:0">
+            <button type="submit" class="logout">🚪 Logout</button>
+        </form>
+    </div>
+
+    <h1>⚡ Power Pulse Dashboard</h1>
+
+    <div class="flash error" th:if="${error}" th:text="${error}"></div>
+        <div class="flash success" th:if="${message}" th:text="${message}"></div>
+
+    <div class="dashboard">
+
+        <div class="card">
+            <h3>⚡ Power Usage</h3>
+            <h2><span th:text="${latestUsage}">0</span> kWh</h2>
+            <p>Latest Reading</p>
+        </div>
+
+        <div class="card">
+            <h3>🔋 Total Energy</h3>
+            <h2><span th:text="${totalUnits}">0</span> kWh</h2>
+            <p>Total Consumption</p>
+        </div>
+
+        <div class="card">
+            <h3>💰 Estimated Bill</h3>
+            <h2>₹<span th:text="${estimatedBill}">0</span></h2>
+            <p>Rate: ₹<span th:text="${rate}">7</span> per unit</p>
+        </div>
+
+        <div class="card">
+            <h3>📊 Status</h3>
+
+            <h2 th:if="${highUsage}" class="warning">High Usage</h2>
+            <h2 th:unless="${highUsage}" class="normal">Normal</h2>
+
+            <p>This month: <span th:text="${currentMonthUnits}">0</span> kWh (limit <span th:text="${highLimit}">0</span>)</p>
+        </div>
+
+    </div>
+
+    <div class="section">
+        <h2>📈 Daily Usage Chart</h2>
+
+        <div class="chart-box">
+            <canvas id="dailyChart"></canvas>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📊 Monthly Usage Chart</h2>
+
+        <div class="chart-box">
+            <canvas id="monthlyChart"></canvas>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🧮 Electricity Bill Calculator</h2>
+
+        <input type="number" id="units" min="0" step="0.01" placeholder="Enter units">
+
+        <button onclick="calculateBill()">Calculate Bill</button>
+
+        <h3 id="billResult"></h3>
+    </div>
+
+    <div class="section">
+        <h2>💡 Energy Saving Suggestions</h2>
+
+        <ul>
+            <li>Switch off lights when not needed.</li>
+            <li>Use LED bulbs to save electricity.</li>
+            <li>Unplug unused electronic devices.</li>
+            <li>Use energy-efficient appliances.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>➕ Add Electricity Reading</h2>
+
+        <form th:action="@{/add-reading}" method="post">
+
+            <input type="date" name="readingDate" required>
+
+            <input type="number"
+                   name="units"
+                   min="0"
+                   step="0.01"
+                   placeholder="Units consumed"
+                   required>
+
+            <button type="submit">Add Reading</button>
+
+        </form>
+    </div>
+
+    <div class="section">
+        <h2>📋 Saved Readings</h2>
+
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Units</th>
+                <th>Actions</th>
+            </tr>
+
+            <tr th:each="reading : ${readings}">
+                <td th:text="${reading.id}">1</td>
+                <td th:text="${reading.readingDate}">2026-01-01</td>
+                <td th:text="${reading.units}">10</td>
+                <td>
+                    <a th:href="@{/edit-reading/{id}(id=${reading.id})}">Edit</a>
+
+                    &nbsp; | &nbsp;
+
+                    <form th:action="@{/delete-reading/{id}(id=${reading.id})}" method="post"
+                          style="display:inline" onsubmit="return confirm('Delete this reading?')">
+                        <button type="submit" class="link-btn">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(readings)}">
+                <td colspan="4" class="empty">No readings yet. Add your first one above.</td>
+            </tr>
+
+        </table>
+    </div>
+
+    <script th:inline="javascript">
+        function calculateBill() {
+            const units = parseFloat(document.getElementById("units").value);
+            const out = document.getElementById("billResult");
+            if (isNaN(units) || units < 0) {
+                out.innerText = "Please enter a valid number of units.";
+                return;
+            }
+            out.innerText = "Estimated Bill: ₹" + (units * /*[[${rate}]]*/ 7).toFixed(2);
+        }
+
+
+                new Chart(document.getElementById("dailyChart"), {
+    type: "line",
+    data: {
+        labels: /*[[${chartDates}]]*/ [],
+        datasets: [{
+            label: "Daily Usage (kWh)",
+            data: /*[[${chartUnits}]]*/ [],
+            borderWidth: 2,
+            tension: 0.3
+        }]
+    }
+});
+
+        new Chart(document.getElementById("monthlyChart"), {
+    type: "bar",
+    data: {
+        labels: /*[[${monthlyLabels}]]*/ [],
+        datasets: [{
+            label: "Monthly Usage (kWh)",
+            data: /*[[${monthlyUnits}]]*/ [],
+            borderWidth: 1
+        }]
+    }
+});
+</script>
+
+</body>
+</html>
